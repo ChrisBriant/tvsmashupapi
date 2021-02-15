@@ -2,10 +2,14 @@ from django.db import models
 from tvsmashup.validators import FileValidator
 from django.dispatch import receiver
 from PIL import Image
+from accounts.models import Account
 import os, secrets
 
 class TVShow(models.Model):
+    user = models.ForeignKey(Account,on_delete=models.CASCADE)
     name = models.CharField(max_length=90)
+    date_added = models.DateTimeField(auto_now_add=True)
+    date_modified = models.DateTimeField(auto_now=True)
 
     class Meta:
         constraints = [
@@ -34,6 +38,8 @@ def _delete_file(path):
 class TVImage(models.Model):
     show = models.ForeignKey(TVShow,on_delete=models.CASCADE)
     picture = models.FileField(upload_to=image_path_handler,validators=[validate_file],null=True,blank=True)
+    date_added = models.DateTimeField(auto_now_add=True)
+    date_modified = models.DateTimeField(auto_now=True)
 
     class Meta:
         constraints = [
@@ -57,8 +63,11 @@ def save_title_image(sender, instance, *args, **kwargs):
 
 
 class SmashUp(models.Model):
+    creator = models.ForeignKey(Account,on_delete=models.CASCADE)
     show_1 = models.ForeignKey(TVShow,on_delete=models.CASCADE,related_name='show1')
     show_2 = models.ForeignKey(TVShow,on_delete=models.CASCADE,related_name='show2')
+    date_added = models.DateTimeField(auto_now_add=True)
+    date_modified = models.DateTimeField(auto_now=True)
 
     class Meta:
         unique_together = ('show_1', 'show_2',)

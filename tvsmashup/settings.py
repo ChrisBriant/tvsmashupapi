@@ -67,6 +67,9 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+#CORS
+CORS_ORIGIN_ALLOW_ALL = True
+
 #For api calls
 CSRF_COOKIE_NAME = "XSRF-TOKEN"
 

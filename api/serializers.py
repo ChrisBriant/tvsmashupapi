@@ -27,12 +27,39 @@ class TVImageSerializer(serializers.ModelSerializer):
         fields = ('id','picture',)
 
 class TVShowSerializer(serializers.ModelSerializer):
-    tv_image = TVImageSerializer()
+    user = serializers.SerializerMethodField()
+    tv_image = serializers.SerializerMethodField()
+
 
     class Meta:
         model = TVShow
-        fields = ('id','tv_image')
+        fields = ('id','name','tv_image','user',)
 
+    def get_tv_image(self,obj):
+        image = TVImage.objects.get(show__id=obj.id)
+        return TVImageSerializer(image).data
+
+    def get_user(self,obj):
+        return PublicUserSerializer(obj.user).data
+
+
+class TVSmashupSerializer(serializers.ModelSerializer):
+    creator = serializers.SerializerMethodField()
+    show1 = serializers.SerializerMethodField()
+    show2 = serializers.SerializerMethodField()
+
+    class Meta:
+        model = SmashUp
+        fields = ('id','show1','show2','creator')
+
+    def get_show1(self,obj):
+        return TVShowSerializer(obj.show_1).data
+
+    def get_show2(self,obj):
+        return TVShowSerializer(obj.show_2).data
+
+    def get_creator(self,obj):
+        return PublicUserSerializer(obj.creator).data
 
 
 #

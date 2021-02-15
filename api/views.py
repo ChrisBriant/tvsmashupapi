@@ -103,6 +103,7 @@ def forgot_password(request):
 def new_tvshow(request):
     name = request.data.get('name')
     tvshow, success = TVShow.objects.get_or_create(
+        user = request.user,
         name = name
     )
     print("SUCCESS", success)
@@ -129,7 +130,8 @@ def new_tvshow(request):
         except Exception as e:
             print("File upload failed", e)
             return Response(ResponseSerializer(GeneralResponse(False,"Invalid File")).data, status=status.HTTP_400_BAD_REQUEST)
-    return Response(ResponseSerializer(GeneralResponse(True,"Upload Succeeded")).data, status=status.HTTP_201_CREATED)
+    serializer = TVShowSerializer(tvshow)
+    return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 @api_view(['POST'])
@@ -145,15 +147,37 @@ def add_smashup(request):
         return Response(ResponseSerializer(GeneralResponse(False,"At least one of the shows doesn't exist")).data, status=status.HTTP_400_BAD_REQUEST)
     try:
         smashup = SmashUp(
+            creator = request.user,
             show_1 = show1,
             show_2 = show2
         )
         smashup.clean()
         smashup.save()
-        return Response(ResponseSerializer(GeneralResponse(True,"Smashup Created")).data, status=status.HTTP_201_CREATED)
+        serializer = TVSmashupSerializer(smashup)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
     except Exception as e:
         print(e)
         return Response(ResponseSerializer(GeneralResponse(False,"Unable to create smashup, a smashup probably alredy exists")).data, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET','POST'])
+def all_smashups(request):
+    smashups = SmashUp.objects.all()
+    serializer = TVSmashupSerializer(smashups,many=True)
+    return Response(serializer.data,status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def my_smashups(request):
+    smashups = SmashUp.objects.filter(creator=request.user)
+    serializer = TVSmashupSerializer(smashups,many=True)
+    return Response(serializer.data,status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def my_tvshows(request):
+    shows = TVShow.objects.filter(user=request.user)
+    serializer = TVShowSerializer(shows,many=True)
+    return Response(serializer.data,status=status.HTTP_200_OK)
 
 
 
