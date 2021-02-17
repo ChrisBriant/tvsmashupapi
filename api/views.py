@@ -41,8 +41,10 @@ def get_token(request):
                     token = get_tokens_for_user(user)
                     return Response(token, status=status.HTTP_200_OK)
                 else:
+                    print("Account Disabled")
                     return Response(ResponseSerializer(GeneralResponse(False,"User is not enabled")).data, status=status.HTTP_400_BAD_REQUEST)
             else:
+                print("Credentials Failed")
                 return Response(ResponseSerializer(GeneralResponse(False,"User name or password are incorrect")).data, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             print(e)
@@ -178,6 +180,15 @@ def my_tvshows(request):
     shows = TVShow.objects.filter(user=request.user)
     serializer = TVShowSerializer(shows,many=True)
     return Response(serializer.data,status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+def search_tvshows(request):
+    searchstr = request.query_params['search']
+    shows = TVShow.objects.filter(name__icontains=searchstr)
+    serializer = TVShowSerializer(shows,many=True)
+    return Response(serializer.data,status=status.HTTP_200_OK)
+
 
 
 

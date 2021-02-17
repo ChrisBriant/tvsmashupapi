@@ -10,4 +10,5 @@ urlpatterns = [
 	url(r'^allsmashups/$', views.all_smashups, name='allsmashups'),
 	url(r'^mysmashups/$', views.my_smashups, name='mysmashups'),
 	url(r'^mytvshows/$', views.my_tvshows, name='mytvshows'),
+	url(r'^searchshows/$', views.search_tvshows, name='searchshows'),
 ]
