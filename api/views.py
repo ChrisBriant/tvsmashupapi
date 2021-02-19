@@ -141,6 +141,7 @@ def new_tvshow(request):
 def add_smashup(request):
     show1 = request.data.get('show1')
     show2 = request.data.get('show2')
+    categories = request.data.get('categories')
     try:
         show1 = TVShow.objects.get(id=request.data.get('show1'))
         show2 = TVShow.objects.get(id=request.data.get('show2'))
@@ -155,6 +156,13 @@ def add_smashup(request):
         )
         smashup.clean()
         smashup.save()
+        #Create the categories
+        for cat in categories:
+            cat, created = Category.objects.get_or_create(
+                user = request.user,
+                smashup = smashup,
+                category = cat
+            )
         serializer = TVSmashupSerializer(smashup)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     except Exception as e:
