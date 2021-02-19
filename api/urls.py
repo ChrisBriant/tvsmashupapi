@@ -2,6 +2,7 @@ from django.conf.urls import url
 from . import views
 
 urlpatterns = [
+	#Authenticate to be taken out after testing /autneticate which has the custom claims
 	url(r'^authenticate/',views.get_token, name='authenticate'),
 	url(r'^register/$', views.register, name='register'),
 	url(r'^forgotpassword/$', views.forgot_password, name='forgotpassword'),
