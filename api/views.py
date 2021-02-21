@@ -103,12 +103,12 @@ def forgot_password(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated,IsAdminUser])
 def new_tvshow(request):
+    # TODO: Look into logic, if no image, etc. do we enforce image upload?
     name = request.data.get('name')
     tvshow, success = TVShow.objects.get_or_create(
         user = request.user,
         name = name
     )
-    print("SUCCESS", success)
     picture = request.data.get('picture',None)
     if picture and success:
         picture = picture
@@ -167,12 +167,23 @@ def add_smashup(request):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     except Exception as e:
         print(e)
-        return Response(ResponseSerializer(GeneralResponse(False,"Unable to create smashup, a smashup probably alredy exists")).data, status=status.HTTP_400_BAD_REQUEST)
+        return Response(ResponseSerializer(GeneralResponse(False,"Unable to create smashup, a smashup probably alredy exists for these shows.")).data, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET','POST'])
 def all_smashups(request):
-    smashups = SmashUp.objects.all()
+    smashups = SmashUp.objects.all().order_by('-date_added')
     serializer = TVSmashupSerializer(smashups,many=True)
+    return Response(serializer.data,status=status.HTTP_200_OK)
+
+
+@api_view(['GET','POST'])
+def get_smashup(request):
+    try:
+        smashup = SmashUp.objects.get(id=request.query_params['id'])
+    except Exception as e:
+        print(e)
+        return Response(ResponseSerializer(GeneralResponse(False,"Smashup doesn't exist")).data, status=status.HTTP_400_BAD_REQUEST)
+    serializer = TVSmashupSerializer(smashup)
     return Response(serializer.data,status=status.HTTP_200_OK)
 
 @api_view(['POST'])
