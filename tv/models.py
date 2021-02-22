@@ -81,14 +81,24 @@ class SmashUp(models.Model):
         if direct.exists() or reverse.exists() or (self.show_1 == self.show_2):
             raise ValidationError({'key':'Already exists in another combination'})
 
-
+## TODO: Normalize so category exists and then smashup-category
 class Category(models.Model):
-    smashup = models.ForeignKey(SmashUp,on_delete=models.CASCADE)
     user = models.ForeignKey(Account,on_delete=models.CASCADE)
     category = models.CharField(max_length=250)
     date_added = models.DateTimeField(auto_now_add=True)
     date_modified = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['category'], name='unique_category')
+        ]
+
+
+class CategorySmashup(models.Model):
+    smashup = models.ForeignKey(SmashUp,on_delete=models.CASCADE)
+    category = models.ForeignKey(Category,on_delete=models.CASCADE)
+    date_added = models.DateTimeField(auto_now_add=True)
+    date_modified = models.DateTimeField(auto_now=True)
 
 class CategoryScore(models.Model):
     user = models.ForeignKey(Account,on_delete=models.CASCADE)

@@ -158,10 +158,13 @@ def add_smashup(request):
         smashup.save()
         #Create the categories
         for cat in categories:
-            cat, created = Category.objects.get_or_create(
+            category, created = Category.objects.get_or_create(
                 user = request.user,
-                smashup = smashup,
                 category = cat
+            )
+            CategorySmashup.objects.create(
+                smashup = smashup,
+                category = category
             )
         serializer = TVSmashupSerializer(smashup)
         return Response(serializer.data, status=status.HTTP_201_CREATED)

@@ -42,12 +42,19 @@ class TVShowSerializer(serializers.ModelSerializer):
     def get_user(self,obj):
         return PublicUserSerializer(obj.user).data
 
+#May no longer be required
 class CategorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Category
         fields = ('id','category')
 
+class CategorySmashupSerializer(serializers.ModelSerializer):
+    category = serializers.ReadOnlyField(source='category.category')
+
+    class Meta:
+        model = CategorySmashup
+        fields = ('id','category')
 
 class TVSmashupSerializer(serializers.ModelSerializer):
     creator = serializers.SerializerMethodField()
@@ -69,7 +76,7 @@ class TVSmashupSerializer(serializers.ModelSerializer):
         return PublicUserSerializer(obj.creator).data
 
     def get_categories(self,obj):
-        return CategorySerializer(obj.category_set,many=True).data
+        return CategorySmashupSerializer(obj.categorysmashup_set,many=True).data
 
 #
 # class PictureAnswerSerializer(serializers.ModelSerializer):
