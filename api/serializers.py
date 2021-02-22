@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from rest_framework.fields import CurrentUserDefault
-from django.db.models import Count
+from django.db.models import Count, Avg
 from accounts.models import Account
 from tv.models import *
 
@@ -51,10 +51,18 @@ class CategorySerializer(serializers.ModelSerializer):
 
 class CategorySmashupSerializer(serializers.ModelSerializer):
     category = serializers.ReadOnlyField(source='category.category')
+    average_rating = serializers.SerializerMethodField()
+    rating_count = serializers.SerializerMethodField()
 
     class Meta:
         model = CategorySmashup
-        fields = ('id','category')
+        fields = ('id','category','average_rating','rating_count')
+
+    def get_average_rating(self, obj):
+        return obj.categoryscore_set.aggregate(Avg('rating'))
+
+    def get_rating_count(self,obj):
+        return obj.categoryscore_set.count()
 
 class TVSmashupSerializer(serializers.ModelSerializer):
     creator = serializers.SerializerMethodField()
@@ -77,6 +85,17 @@ class TVSmashupSerializer(serializers.ModelSerializer):
 
     def get_categories(self,obj):
         return CategorySmashupSerializer(obj.categorysmashup_set,many=True).data
+
+
+class RatingSerializer(serializers.ModelSerializer):
+    category = serializers.SerializerMethodField()
+
+    class Meta:
+        model = CategoryScore
+        fields = ('id','rating','category')
+
+    def get_category(self,obj):
+        return CategorySmashupSerializer(obj.categorysmashup).data
 
 #
 # class PictureAnswerSerializer(serializers.ModelSerializer):

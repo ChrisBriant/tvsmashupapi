@@ -211,6 +211,32 @@ def search_tvshows(request):
     serializer = TVShowSerializer(shows,many=True)
     return Response(serializer.data,status=status.HTTP_200_OK)
 
+@api_view(['POST'])
+def add_rating(request):
+    rating = request.data.get('rating')
+    catsmashupid = request.data.get('id')
+    if request.user.id == None:
+        user = None
+    else:
+        user = request.user
+    if rating in range(1,6):
+        try:
+            rating = CategoryScore.objects.create(
+                user = user,
+                rating = rating,
+                categorysmashup = CategorySmashup.objects.get(id=catsmashupid)
+            )
+        except IntegrityError as e:
+            print(e)
+            return Response(ResponseSerializer(GeneralResponse(False,"You have already addded a rating for this category.")).data, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            print(e)
+            return Response(ResponseSerializer(GeneralResponse(False,"Unable to add rating.")).data, status=status.HTTP_400_BAD_REQUEST)
+    else:
+        return Response(ResponseSerializer(GeneralResponse(False,"Rating must be a number between 1 and 5")).data, status=status.HTTP_400_BAD_REQUEST)
+    serializer = RatingSerializer(rating)
+    return Response(serializer.data,status=status.HTTP_200_OK)
+
 
 
 
