@@ -53,16 +53,32 @@ class CategorySmashupSerializer(serializers.ModelSerializer):
     category = serializers.ReadOnlyField(source='category.category')
     average_rating = serializers.SerializerMethodField()
     rating_count = serializers.SerializerMethodField()
+    already_rated = serializers.SerializerMethodField()
+        ## TODO: factor in context if user is logged in find if category ratied
 
     class Meta:
         model = CategorySmashup
-        fields = ('id','category','average_rating','rating_count')
+        fields = ('id','category','average_rating','rating_count','already_rated')
 
     def get_average_rating(self, obj):
         return obj.categoryscore_set.aggregate(Avg('rating'))
 
     def get_rating_count(self,obj):
         return obj.categoryscore_set.count()
+
+    def get_already_rated(self,obj):
+        if not self.context['user_id']:
+            print('No user')
+            return False
+        else:
+            #Determine if the user ID is in the ratings
+            print('Is user', self.context['user_id'])
+            ratings = obj.categoryscore_set.all().values();
+            ratings_filtered = [r['user_id'] for r in ratings if r['user_id']]
+            if self.context['user_id'] in ratings_filtered:
+                return True
+            else:
+                return False
 
 class TVSmashupSerializer(serializers.ModelSerializer):
     creator = serializers.SerializerMethodField()
@@ -84,7 +100,7 @@ class TVSmashupSerializer(serializers.ModelSerializer):
         return PublicUserSerializer(obj.creator).data
 
     def get_categories(self,obj):
-        return CategorySmashupSerializer(obj.categorysmashup_set,many=True).data
+        return CategorySmashupSerializer(obj.categorysmashup_set,many=True,context=self.context).data
 
 
 class RatingSerializer(serializers.ModelSerializer):

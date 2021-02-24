@@ -186,7 +186,7 @@ def get_smashup(request):
     except Exception as e:
         print(e)
         return Response(ResponseSerializer(GeneralResponse(False,"Smashup doesn't exist")).data, status=status.HTTP_400_BAD_REQUEST)
-    serializer = TVSmashupSerializer(smashup)
+    serializer = TVSmashupSerializer(smashup,context={'user_id':request.user.id})
     return Response(serializer.data,status=status.HTTP_200_OK)
 
 @api_view(['POST'])
