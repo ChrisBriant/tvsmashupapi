@@ -13,5 +13,6 @@ urlpatterns = [
 	url(r'^mytvshows/$', views.my_tvshows, name='mytvshows'),
 	url(r'^searchshows/$', views.search_tvshows, name='searchshows'),
 	url(r'^getsmashup/$', views.get_smashup, name='getsmashup'),
-	url(r'^addrating/$', views.add_rating, name='addrating')
+	url(r'^addrating/$', views.add_rating, name='addrating'),
+	url(r'^updatecategories/$', views.update_categories, name='updatecategories'),
 ]

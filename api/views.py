@@ -175,7 +175,7 @@ def add_smashup(request):
 @api_view(['GET','POST'])
 def all_smashups(request):
     smashups = SmashUp.objects.all().order_by('-date_added')
-    serializer = TVSmashupSerializer(smashups,many=True)
+    serializer = TVSmashupSerializer(smashups,many=True,context={'user_id':request.user.id})
     return Response(serializer.data,status=status.HTTP_200_OK)
 
 
@@ -238,31 +238,30 @@ def add_rating(request):
     return Response(serializer.data,status=status.HTTP_200_OK)
 
 
-
-
-#
-# # Create your views here.
-# @api_view(['POST'])
-# @permission_classes([IsAuthenticated])
-# def addround(request):
-#     try:
-#         #Get the quiz
-#         quiz = Quiz.objects.get(id=request.data['quiz_id'])
-#     except Exception as e:
-#         return Response(ResponseSerializer(GeneralResponse(False,e)).data, status=status.HTTP_400_BAD_REQUEST)
-#
-#     roundserializer = RoundSerializer(data=request.data['round'],context={'user':request.user,'quiz':quiz})
-#     try:
-#         if roundserializer.is_valid():
-#             round = roundserializer.save()
-#         else:
-#             print("Not Valid")
-#             print(roundserializer.errors)
-#             template = "Field {0} failed because {1}\n"
-#             errs = [template.format(e,roundserializer.errors[e][0]) for e in roundserializer.errors.keys()]
-#             return Response(ResponseSerializer(GeneralResponse(False,'Validation failed\n'+'\n'.join(errs))).data, status=status.HTTP_400_BAD_REQUEST)
-#     except Exception as e:
-#         print('failed',e)
-#         return Response(ResponseSerializer(GeneralResponse(False,e)).data, status=status.HTTP_400_BAD_REQUEST)
-#     round_data = StoredRoundSerializer(round).data
-#     return Response(round_data, status=status.HTTP_201_CREATED)
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def update_categories(request):
+    try:
+        smashup = SmashUp.objects.get(id=request.data.get('id'),creator=request.user)
+    except Exception as e:
+        return Response(ResponseSerializer(GeneralResponse(False,"You are not authorised to change this Smashup.")).data, status=status.HTTP_401_UNAUTHORIZED)
+    #Get the existing categories extract from DB and then remove ones which are not part of that set
+    existing = request.data.get('existing')
+    print('EXISTING', existing)
+    existing_ids = [e['id'] for e in existing]
+    remove_list = CategorySmashup.objects.exclude(id__in=existing_ids)
+    remove_list.delete()
+    #Add the new categories
+    new_categories = request.data.get('new')
+    new_names = [new['category'] for new in new_categories]
+    for new_cat in new_names:
+        category, created = Category.objects.get_or_create(
+            user = request.user,
+            category = new_cat
+        )
+        CategorySmashup.objects.create(
+            smashup = smashup,
+            category = category
+        )
+    serializer = TVSmashupSerializer(smashup,context={'user_id':request.user.id})
+    return Response(serializer.data,status=status.HTTP_200_OK)

@@ -36,8 +36,11 @@ class TVShowSerializer(serializers.ModelSerializer):
         fields = ('id','name','tv_image','user',)
 
     def get_tv_image(self,obj):
-        image = TVImage.objects.get(show__id=obj.id)
-        return TVImageSerializer(image).data
+        try:
+            image = TVImage.objects.get(show__id=obj.id)
+            return TVImageSerializer(image).data
+        except Exception as e:
+            return None
 
     def get_user(self,obj):
         return PublicUserSerializer(obj.user).data
