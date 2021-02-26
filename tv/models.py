@@ -100,15 +100,18 @@ class CategorySmashup(models.Model):
     date_added = models.DateTimeField(auto_now_add=True)
     date_modified = models.DateTimeField(auto_now=True)
 
+class ShowRating(models.Model):
+    show = models.ForeignKey(TVShow,on_delete=models.CASCADE)
+    rating = models.IntegerField(null=False)
+
+
 class CategoryScore(models.Model):
     user = models.ForeignKey(Account,on_delete=models.PROTECT,null=True)
     categorysmashup = models.ForeignKey(CategorySmashup,on_delete=models.CASCADE)
-    rating = models.IntegerField(null=False)
+    show_1_rating = models.ForeignKey(ShowRating,on_delete=models.CASCADE,related_name="show_1_rating",null=True)
+    show_2_rating = models.ForeignKey(ShowRating,on_delete=models.CASCADE,related_name="show_2_rating",null=True)
     date_added = models.DateTimeField(auto_now_add=True)
     date_modified = models.DateTimeField(auto_now=True)
 
     class Meta:
         unique_together = ('user', 'categorysmashup',)
-        # constraints = [
-        #     models.UniqueConstraint(fields=['user'], name='unique_category_score_user')
-        # ]

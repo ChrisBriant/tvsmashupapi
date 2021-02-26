@@ -54,17 +54,21 @@ class CategorySerializer(serializers.ModelSerializer):
 
 class CategorySmashupSerializer(serializers.ModelSerializer):
     category = serializers.ReadOnlyField(source='category.category')
-    average_rating = serializers.SerializerMethodField()
+    show_1_average_rating = serializers.SerializerMethodField()
+    show_2_average_rating = serializers.SerializerMethodField()
     rating_count = serializers.SerializerMethodField()
     already_rated = serializers.SerializerMethodField()
         ## TODO: factor in context if user is logged in find if category ratied
 
     class Meta:
         model = CategorySmashup
-        fields = ('id','category','average_rating','rating_count','already_rated')
+        fields = ('id','category','show_1_average_rating','show_2_average_rating','rating_count','already_rated')
 
-    def get_average_rating(self, obj):
-        return obj.categoryscore_set.aggregate(Avg('rating'))
+    def get_show_1_average_rating(self, obj):
+        return obj.categoryscore_set.aggregate(Avg('show_1_rating__rating'))
+
+    def get_show_2_average_rating(self, obj):
+        return obj.categoryscore_set.aggregate(Avg('show_2_rating__rating'))
 
     def get_rating_count(self,obj):
         return obj.categoryscore_set.count()
@@ -105,16 +109,25 @@ class TVSmashupSerializer(serializers.ModelSerializer):
     def get_categories(self,obj):
         return CategorySmashupSerializer(obj.categorysmashup_set,many=True,context=self.context).data
 
+class ShowRatingSerializer(serializers.ModelSerializer):
+    show_id = serializers.ReadOnlyField(source='show.id')
+    show_name = serializers.ReadOnlyField(source='show.name')
+
+    class Meta:
+        model = ShowRating
+        fields = ('show_id', 'show_name', 'rating')
 
 class RatingSerializer(serializers.ModelSerializer):
     category = serializers.SerializerMethodField()
+    show_1_rating = ShowRatingSerializer()
+    show_2_rating = ShowRatingSerializer()
 
     class Meta:
         model = CategoryScore
-        fields = ('id','rating','category')
+        fields = ('id','show_1_rating','show_2_rating','category')
 
     def get_category(self,obj):
-        return CategorySmashupSerializer(obj.categorysmashup).data
+        return CategorySmashupSerializer(obj.categorysmashup,context=self.context).data
 
 #
 # class PictureAnswerSerializer(serializers.ModelSerializer):
