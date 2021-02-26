@@ -149,6 +149,7 @@ def add_smashup(request):
         print(e)
         return Response(ResponseSerializer(GeneralResponse(False,"At least one of the shows doesn't exist")).data, status=status.HTTP_400_BAD_REQUEST)
     try:
+        print(request.user, show1,show2)
         smashup = SmashUp(
             creator = request.user,
             show_1 = show1,
@@ -156,6 +157,7 @@ def add_smashup(request):
         )
         smashup.clean()
         smashup.save()
+
         #Create the categories
         for cat in categories:
             category, created = Category.objects.get_or_create(
@@ -166,10 +168,11 @@ def add_smashup(request):
                 smashup = smashup,
                 category = category
             )
-        serializer = TVSmashupSerializer(smashup)
+        print("here")
+        serializer = TVSmashupSerializer(smashup,context={'user_id' : request.user.id})
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     except Exception as e:
-        print(e)
+        print(type(e))
         return Response(ResponseSerializer(GeneralResponse(False,"Unable to create smashup, a smashup probably alredy exists for these shows.")).data, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET','POST'])

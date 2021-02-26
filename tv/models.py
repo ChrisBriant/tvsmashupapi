@@ -73,12 +73,10 @@ class SmashUp(models.Model):
         unique_together = ('show_1', 'show_2',)
 
     def clean(self):
-        print("cleaning")
         direct = SmashUp.objects.filter(show_1 = self.show_1, show_2 = self.show_2)
         reverse = SmashUp.objects.filter(show_1 = self.show_2, show_2 = self.show_1)
-
-
         if direct.exists() or reverse.exists() or (self.show_1 == self.show_2):
+            print("direct exists",direct.exists(),reverse.exists(),(self.show_1 == self.show_2))
             raise ValidationError({'key':'Already exists in another combination'})
 
 ## TODO: Normalize so category exists and then smashup-category
