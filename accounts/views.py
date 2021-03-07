@@ -53,16 +53,16 @@ class ProfileView(UpdateView):
         return self.request.user
 
 
-def confirm(request,hash):
-    try:
-        user = Account.objects.get(hash=hash)
-        user.is_enabled = True
-        user.save()
-        success = True
-    except Exception as e:
-        success = False
-        messages.error(request,"Something went wrong, please send a new password reset request")
-    return render(request,'registration/confirm.html',{'success' : success, 'show_header' : True, 'login_url' : BASE_URL })
+# def confirm(request,hash):
+#     try:
+#         user = Account.objects.get(hash=hash)
+#         user.is_enabled = True
+#         user.save()
+#         success = True
+#     except Exception as e:
+#         success = False
+#         messages.error(request,"Something went wrong, please send a new password reset request")
+#     return render(request,'registration/confirm.html',{'success' : success, 'show_header' : True, 'login_url' : BASE_URL })
 
 
 def login(request):
@@ -177,3 +177,17 @@ def changepass(request):
     else:
         return HttpResponseRedirect('/accounts/login/?next=/add-listing')
     return render(request,'registration/password_change_form.html', {'form' : form })
+
+
+def confirm(request,hash):
+    next_url = request.GET.get('next')
+    print(hash)
+    print(next_url)
+    try:
+        user = Account.objects.get(hash=hash)
+        user.enabled = True
+        user.save()
+        message = 'Login verified succesfully. You can now sign in.'
+    except Exception as e:
+        message = 'Unable to verify account, please try a forgot password reset.'
+    return render(request,'accounts/confirmation.html',{'message':message})
