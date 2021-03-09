@@ -225,6 +225,13 @@ def search(request):
     serializer = ShowsAndSmashupsSerializer(showsandsmashups)
     return Response(serializer.data,status=status.HTTP_200_OK)
 
+@api_view(['GET'])
+def search_id(request):
+    show_id = int(request.query_params['id'])
+    smashups = SmashUp.objects.filter(Q(show_1__id=show_id) | Q(show_2__id=show_id))
+    serializer = TVSmashupSerializer(smashups,many=True,context={'user_id':None})
+    return Response(serializer.data,status=status.HTTP_200_OK)
+
 
 @api_view(['GET'])
 def shows_index(request):

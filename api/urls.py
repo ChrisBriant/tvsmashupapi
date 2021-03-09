@@ -12,6 +12,7 @@ urlpatterns = [
 	url(r'^mysmashups/$', views.my_smashups, name='mysmashups'),
 	url(r'^mytvshows/$', views.my_tvshows, name='mytvshows'),
 	url(r'^searchshows/$', views.search_tvshows, name='searchshows'),
+	url(r'^showsbyid/$', views.search_id, name='showsbyid'),
 	url(r'^search/$', views.search, name='search'),
 	url(r'^showsindexed/$', views.shows_index, name='showsindexed'),
 	url(r'^getsmashup/$', views.get_smashup, name='getsmashup'),
