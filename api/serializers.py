@@ -13,6 +13,12 @@ class ResponseSerializer(serializers.Serializer):
     success = serializers.BooleanField()
     message = serializers.CharField(max_length=100)
 
+class ShowsAndSmashups(object):
+    def __init__(self, shows, smashups):
+        self.shows = shows
+        self.smashups = smashups
+
+
 #Restrict publicly viewable user attributes
 class PublicUserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -129,7 +135,15 @@ class RatingSerializer(serializers.ModelSerializer):
     def get_category(self,obj):
         return CategorySmashupSerializer(obj.categorysmashup,context=self.context).data
 
-#
+
+class ShowsAndSmashupsSerializer(serializers.Serializer):
+    shows = serializers.ListField(child=TVShowSerializer())
+    smashups = serializers.ListField(child=TVSmashupSerializer())
+
+class ShowIndexSerializer(serializers.Serializer):
+    showidx = serializers.CharField()
+    count_shows = serializers.IntegerField()
+
 # class PictureAnswerSerializer(serializers.ModelSerializer):
 #     #picture = serializers.SerializerMethodField()
 #

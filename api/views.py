@@ -1,6 +1,8 @@
 from django.shortcuts import render
 from django.contrib.auth import authenticate
 from django.db import IntegrityError
+from django.db.models import Q
+from django.db.models.functions import Substr, Lower
 from rest_framework.decorators import api_view,authentication_classes,permission_classes,action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
@@ -212,6 +214,24 @@ def search_tvshows(request):
     searchstr = request.query_params['search']
     shows = TVShow.objects.filter(name__icontains=searchstr)
     serializer = TVShowSerializer(shows,many=True)
+    return Response(serializer.data,status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+def search(request):
+    searchstr = request.query_params['search']
+    shows = TVShow.objects.filter(name__icontains=searchstr)
+    smashups = SmashUp.objects.filter(Q(show_1__name__icontains=searchstr) | Q(show_2__name__icontains=searchstr))
+    showsandsmashups = ShowsAndSmashups(shows,smashups)
+    serializer = ShowsAndSmashupsSerializer(showsandsmashups)
+    return Response(serializer.data,status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+def shows_index(request):
+    shows = TVShow.objects.all().annotate(showidx=Lower(Substr('name', 1, 1))) .values('showidx').annotate(count_shows=Count('id')).order_by('showidx')
+    for show in shows:
+        print(show)
+    serializer = ShowIndexSerializer(shows,many=True)
     return Response(serializer.data,status=status.HTTP_200_OK)
 
 @api_view(['POST'])
