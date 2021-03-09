@@ -228,8 +228,10 @@ def search(request):
 @api_view(['GET'])
 def search_id(request):
     show_id = int(request.query_params['id'])
+    show = TVShow.objects.filter(id=show_id)
     smashups = SmashUp.objects.filter(Q(show_1__id=show_id) | Q(show_2__id=show_id))
-    serializer = TVSmashupSerializer(smashups,many=True,context={'user_id':None})
+    showsandsmashups = ShowsAndSmashups(show,smashups)
+    serializer = ShowsAndSmashupsSerializer(showsandsmashups)
     return Response(serializer.data,status=status.HTTP_200_OK)
 
 

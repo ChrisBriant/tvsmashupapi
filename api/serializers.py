@@ -113,7 +113,10 @@ class TVSmashupSerializer(serializers.ModelSerializer):
         return PublicUserSerializer(obj.creator).data
 
     def get_categories(self,obj):
-        return CategorySmashupSerializer(obj.categorysmashup_set,many=True,context=self.context).data
+        if not self.context:
+            return CategorySmashupSerializer(obj.categorysmashup_set,many=True,context={'user_id':None}).data
+        else:
+            return CategorySmashupSerializer(obj.categorysmashup_set,many=True,context=self.context).data
 
 class ShowRatingSerializer(serializers.ModelSerializer):
     show_id = serializers.ReadOnlyField(source='show.id')
