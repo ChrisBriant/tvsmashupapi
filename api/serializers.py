@@ -35,11 +35,12 @@ class TVImageSerializer(serializers.ModelSerializer):
 class TVShowSerializer(serializers.ModelSerializer):
     user = serializers.SerializerMethodField()
     tv_image = serializers.SerializerMethodField()
+    smashup_count = serializers.SerializerMethodField()
 
 
     class Meta:
         model = TVShow
-        fields = ('id','name','tv_image','user',)
+        fields = ('id','name','tv_image','user','smashup_count',)
 
     def get_tv_image(self,obj):
         try:
@@ -50,6 +51,9 @@ class TVShowSerializer(serializers.ModelSerializer):
 
     def get_user(self,obj):
         return PublicUserSerializer(obj.user).data
+
+    def get_smashup_count(self,obj):
+        return obj.show1.all().count() + obj.show2.all().count()
 
 #May no longer be required
 class CategorySerializer(serializers.ModelSerializer):

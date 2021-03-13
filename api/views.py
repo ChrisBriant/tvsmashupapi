@@ -226,6 +226,13 @@ def search(request):
     return Response(serializer.data,status=status.HTTP_200_OK)
 
 @api_view(['GET'])
+def shows_first_letter(request):
+    searchstr = request.query_params['letter']
+    shows = TVShow.objects.filter(name__istartswith=searchstr)
+    serializer = TVShowSerializer(shows,many=True)
+    return Response(serializer.data,status=status.HTTP_200_OK)
+
+@api_view(['GET'])
 def search_id(request):
     show_id = int(request.query_params['id'])
     show = TVShow.objects.filter(id=show_id)
