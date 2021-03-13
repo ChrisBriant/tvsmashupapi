@@ -6,6 +6,7 @@ urlpatterns = [
 	url(r'^authenticate/',views.get_token, name='authenticate'),
 	url(r'^register/$', views.register, name='register'),
 	url(r'^forgotpassword/$', views.forgot_password, name='forgotpassword'),
+	url(r'^changepassword/$', views.change_password, name='changepassword'),
 	url(r'^addshow/$', views.new_tvshow, name='addshow'),
 	url(r'^addsmashup/$', views.add_smashup, name='addsmashup'),
 	url(r'^allsmashups/$', views.all_smashups, name='allsmashups'),

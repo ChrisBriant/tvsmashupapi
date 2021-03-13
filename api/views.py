@@ -90,15 +90,33 @@ def register(request):
 @api_view(['POST'])
 def forgot_password(request):
     email = request.data['email']
+    print(email)
     try:
         user = Account.objects.get(email=email)
     except Exception as e:
+        print(e)
         return Response(ResponseSerializer(GeneralResponse(False,'Email address not found, please register a new account.')).data, status=status.HTTP_400_BAD_REQUEST)
     user.hash = hex(random.getrandbits(128))
     user.save()
-    url = BASE_URL + "passwordresetapi/" + user.hash + "/"
+    url = BASE_URL + "passwordreset/" + user.hash + "/"
     sendpasswordresetemail(url,user.name,user.email)
     return Response(ResponseSerializer(GeneralResponse(True,'Please check your email and click on the link to reset your password')).data, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+def change_password(request):
+    password = request.data['password']
+    hash = request.data['hash']
+    try:
+        user = Account.objects.get(hash=hash)
+    except Exception as e:
+        print(e)
+        return Response(ResponseSerializer(GeneralResponse(False,'Sorry, unable to reset password')).data, status=status.HTTP_400_BAD_REQUEST)
+    user.hash = ''
+    user.set_password(password)
+    user.save()
+    return Response(ResponseSerializer(GeneralResponse(True,'Password succesfully changed')).data, status=status.HTTP_200_OK)
+
 
 
 # # Create your views here.
