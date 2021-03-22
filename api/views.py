@@ -38,6 +38,7 @@ def get_token(request):
             password = request.data["password"]
             user = authenticate(username=email,password=password)
             if user:
+                print('USER',user.__dict__)
                 if user.is_enabled:
                     #Issue token
                     token = get_tokens_for_user(user)

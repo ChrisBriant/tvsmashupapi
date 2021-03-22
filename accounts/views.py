@@ -185,7 +185,7 @@ def confirm(request,hash):
     print(next_url)
     try:
         user = Account.objects.get(hash=hash)
-        user.enabled = True
+        user.is_enabled = True
         user.save()
         message = 'Login verified succesfully. You can now sign in.'
     except Exception as e:
