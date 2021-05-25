@@ -144,14 +144,22 @@ def new_tvshow(request):
             print("File upload failed", e)
             return Response(ResponseSerializer(GeneralResponse(False,"Invalid File")).data, status=status.HTTP_400_BAD_REQUEST)
     elif picture and not success:
+        print(tvshow)
         #Update picture instead of create new one
         try:
-            pic = TVImage.objects.get(show_id=tvshow.id)
+            try:
+                pic = TVImage.objects.get(show_id=tvshow.id)
+            except TVImage.DoesNotExist as e:
+                #Create a new TV Image
+                pic = TVImage(
+                    show = tvshow,
+                    picture=picture
+                )
             pic.picture = picture
             pic.full_clean()
             pic.save()
         except Exception as e:
-            print("File upload failed", e)
+            print("File upload failed for existing", e)
             return Response(ResponseSerializer(GeneralResponse(False,"Invalid File")).data, status=status.HTTP_400_BAD_REQUEST)
     serializer = TVShowSerializer(tvshow)
     return Response(serializer.data, status=status.HTTP_201_CREATED)
