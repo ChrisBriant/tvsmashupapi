@@ -26,12 +26,10 @@ def image_path_handler(instance, filename):
     fn, ext = os.path.splitext(filename)
     #Create a random filename using hash function
     name = secrets.token_hex(20)
-    print("uploading",instance.__dict__)
     return "titleimage_{id}/{name}{ext}".format(id=instance.show_id,name=name,ext=ext)
 
 def _delete_file(path):
    """ Deletes file from filesystem. """
-   print("Deleting Image")
    if os.path.isfile(path):
         os.remove(path)
 
@@ -48,7 +46,6 @@ class TVImage(models.Model):
 
 @receiver(models.signals.post_delete, sender=TVImage)
 def delete_title_image(sender, instance, *args, **kwargs):
-    print("DELETING")
     if instance.picture:
         _delete_file(instance.picture.path)
 
@@ -58,7 +55,6 @@ def save_title_image(sender, instance, *args, **kwargs):
         image = Image.open(instance.picture.path)
         new_image = image.resize((300, 200))
         filename, file_extension = os.path.splitext(instance.picture.path)
-        #new_file_path = filename + '_NEW' + file_extension
         new_image.save(instance.picture.path)
 
 

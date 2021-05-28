@@ -53,18 +53,6 @@ class ProfileView(UpdateView):
         return self.request.user
 
 
-# def confirm(request,hash):
-#     try:
-#         user = Account.objects.get(hash=hash)
-#         user.is_enabled = True
-#         user.save()
-#         success = True
-#     except Exception as e:
-#         success = False
-#         messages.error(request,"Something went wrong, please send a new password reset request")
-#     return render(request,'registration/confirm.html',{'success' : success, 'show_header' : True, 'login_url' : BASE_URL })
-
-
 def login(request):
     next_url = request.GET.get('next')
     if request.method == 'POST':
@@ -151,7 +139,6 @@ def changepass_reset(request,hash):
                 messages.error(request,"Sorry a matching account cannot be found")
         else:
             pass
-            #messages.error(request,form.errors)
     return render(request,'registration/password_reset_form.html', {'form' : form })
 
 #When user is LOGGED IN
@@ -173,7 +160,6 @@ def changepass(request):
                         messages.error(request,"Unable to change password")
         else:
             pass
-            #messages.error(request,form.errors)
     else:
         return HttpResponseRedirect('/accounts/login/?next=/add-listing')
     return render(request,'registration/password_change_form.html', {'form' : form })

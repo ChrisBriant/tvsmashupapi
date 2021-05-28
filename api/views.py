@@ -14,7 +14,6 @@ from tvsmashup.settings import BASE_URL
 from .serializers import *
 from tv.models import *
 from difflib import SequenceMatcher
-# from email_validator import validate_email, EmailNotValidError
 from password_validator import PasswordValidator
 from tvsmashup.email import sendjoiningconfirmation, sendpasswordresetemail
 import random
@@ -38,19 +37,15 @@ def get_token(request):
             password = request.data["password"]
             user = authenticate(username=email,password=password)
             if user:
-                print('USER',user.__dict__)
                 if user.is_enabled:
                     #Issue token
                     token = get_tokens_for_user(user)
                     return Response(token, status=status.HTTP_200_OK)
                 else:
-                    print("Account Disabled")
                     return Response(ResponseSerializer(GeneralResponse(False,"User is not enabled")).data, status=status.HTTP_400_BAD_REQUEST)
             else:
-                print("Credentials Failed")
                 return Response(ResponseSerializer(GeneralResponse(False,"User name or password are incorrect")).data, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            print(e)
             return Response(ResponseSerializer(GeneralResponse(False,"Unable to retrieve token")).data, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -82,7 +77,6 @@ def register(request):
         sendjoiningconfirmation(url,user.name,user.email)
         return Response(ResponseSerializer(GeneralResponse(True,'Account Created')).data, status=status.HTTP_201_CREATED)
     except IntegrityError as e:
-        print(type(e).__name__)
         return Response(ResponseSerializer(GeneralResponse(False,'Email already exists with us, please try a different one or send a forgot password request')).data, status=status.HTTP_400_BAD_REQUEST)
     else:
         return Response(ResponseSerializer(GeneralResponse(False,'Problem creating account')).data, status=status.HTTP_400_BAD_REQUEST)
@@ -91,11 +85,9 @@ def register(request):
 @api_view(['POST'])
 def forgot_password(request):
     email = request.data['email']
-    print(email)
     try:
         user = Account.objects.get(email=email)
     except Exception as e:
-        print(e)
         return Response(ResponseSerializer(GeneralResponse(False,'Email address not found, please register a new account.')).data, status=status.HTTP_400_BAD_REQUEST)
     user.hash = hex(random.getrandbits(128))
     user.save()
@@ -111,7 +103,6 @@ def change_password(request):
     try:
         user = Account.objects.get(hash=hash)
     except Exception as e:
-        print(e)
         return Response(ResponseSerializer(GeneralResponse(False,'Sorry, unable to reset password')).data, status=status.HTTP_400_BAD_REQUEST)
     user.hash = ''
     user.set_password(password)
@@ -124,7 +115,6 @@ def change_password(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated,IsAdminUser])
 def new_tvshow(request):
-    # TODO: Look into logic, if no image, etc. do we enforce image upload?
     name = request.data.get('name')
     tvshow, success = TVShow.objects.get_or_create(
         user = request.user,
@@ -141,10 +131,8 @@ def new_tvshow(request):
             pic.full_clean()
             pic.save()
         except Exception as e:
-            print("File upload failed", e)
             return Response(ResponseSerializer(GeneralResponse(False,"Invalid File")).data, status=status.HTTP_400_BAD_REQUEST)
     elif picture and not success:
-        print(tvshow)
         #Update picture instead of create new one
         try:
             try:
@@ -159,7 +147,6 @@ def new_tvshow(request):
             pic.full_clean()
             pic.save()
         except Exception as e:
-            print("File upload failed for existing", e)
             return Response(ResponseSerializer(GeneralResponse(False,"Invalid File")).data, status=status.HTTP_400_BAD_REQUEST)
     serializer = TVShowSerializer(tvshow)
     return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -175,10 +162,8 @@ def add_smashup(request):
         show1 = TVShow.objects.get(id=request.data.get('show1'))
         show2 = TVShow.objects.get(id=request.data.get('show2'))
     except Exception as e:
-        print(e)
         return Response(ResponseSerializer(GeneralResponse(False,"At least one of the shows doesn't exist")).data, status=status.HTTP_400_BAD_REQUEST)
     try:
-        print(request.user, show1,show2)
         smashup = SmashUp(
             creator = request.user,
             show_1 = show1,
@@ -197,11 +182,9 @@ def add_smashup(request):
                 smashup = smashup,
                 category = category
             )
-        print("here")
         serializer = TVSmashupSerializer(smashup,context={'user_id' : request.user.id})
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     except Exception as e:
-        print(type(e))
         return Response(ResponseSerializer(GeneralResponse(False,"Unable to create smashup, a smashup probably alredy exists for these shows.")).data, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET','POST'])
@@ -216,7 +199,6 @@ def get_smashup(request):
     try:
         smashup = SmashUp.objects.get(id=request.query_params['id'])
     except Exception as e:
-        print(e)
         return Response(ResponseSerializer(GeneralResponse(False,"Smashup doesn't exist")).data, status=status.HTTP_400_BAD_REQUEST)
     serializer = TVSmashupSerializer(smashup,context={'user_id':request.user.id})
     return Response(serializer.data,status=status.HTTP_200_OK)
@@ -272,8 +254,6 @@ def search_id(request):
 @api_view(['GET'])
 def shows_index(request):
     shows = TVShow.objects.all().annotate(showidx=Lower(Substr('name', 1, 1))) .values('showidx').annotate(count_shows=Count('id')).order_by('showidx')
-    for show in shows:
-        print(show)
     serializer = ShowIndexSerializer(shows,many=True)
     return Response(serializer.data,status=status.HTTP_200_OK)
 
@@ -307,10 +287,8 @@ def add_rating(request):
                     categorysmashup = categorysmashup
                 )
             except IntegrityError as e:
-                print(e)
                 return Response(ResponseSerializer(GeneralResponse(False,"You have already addded a rating for this category.")).data, status=status.HTTP_400_BAD_REQUEST)
             except Exception as e:
-                print(e)
                 return Response(ResponseSerializer(GeneralResponse(False,"Unable to add rating.")).data, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response(ResponseSerializer(GeneralResponse(False,"Rating must be a number between 1 and 5")).data, status=status.HTTP_400_BAD_REQUEST)
@@ -329,7 +307,6 @@ def update_categories(request):
         return Response(ResponseSerializer(GeneralResponse(False,"You are not authorised to change this Smashup.")).data, status=status.HTTP_401_UNAUTHORIZED)
     #Get the existing categories extract from DB and then remove ones which are not part of that set
     existing = request.data.get('existing')
-    print('EXISTING', existing)
     existing_ids = [e['id'] for e in existing]
     remove_list = CategorySmashup.objects.exclude(id__in=existing_ids)
     remove_list.delete()

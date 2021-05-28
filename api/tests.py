@@ -64,9 +64,7 @@ class TestUpdateCategoriesDetails(APITestCase):
         token = response.data['access']
         self.client.force_authenticate(user=user, token=token)
         response = self.client.post('/api/getsmashup/?id=1')
-        #print(response.data)
-        #for item in response.data['categories']:
-            #print(item)
+
         cat_payload = {
             'id' : 1,
             'existing' : [{
@@ -92,7 +90,6 @@ class TestUpdateCategoriesDetails(APITestCase):
                 },
             ],
         }
-        #print(cat_payload)
         #Send request
         response = self.client.post('/api/updatecategories/',json.dumps(cat_payload), content_type='application/json')
         for item in response.data['categories']:
